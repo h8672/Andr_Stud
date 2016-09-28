@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void asynctaskButtonClicked(View view){
+        //Toast.makeText(this, "Button pressed!", Toast.LENGTH_SHORT);
         asyncTaskButton.setEnabled(false);
         //start a new thread by using AsyncTask
         //new MyTask().execute("a","b","c"); //Antaa parametrejä params muuttujalle joka on doInBackground metodissa
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             //params[0]; //"a"
             for(int i = 1; i <= 100; i++){
                 //we want to show this number on progressbar
-                publishProgress();
+                publishProgress(i);
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex){
@@ -60,10 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         //here you can modify UI
         @Override
-        protected void onProgressUpdate(Integer... params){
-            if(params == null) progressBar.incrementProgressBy(1);
-            else progressBar.setProgress(params[0]);
-        }
+        protected void onProgressUpdate(Integer... params){ progressBar.setProgress(params[0]); }
 
         //called after doInBackground is finished
         @Override
