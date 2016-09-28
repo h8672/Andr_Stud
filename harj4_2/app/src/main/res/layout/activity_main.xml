@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.h8672.harj4_2.MainActivity">
+
+    <!--Audio buttons-->
+    <TextView
+        android:id="@+id/txtAudio1"
+        android:textSize="40dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Audio" />
+    <Button
+        android:id="@+id/btnAudio1"
+        android:layout_below="@id/txtAudio1"
+        android:text="Start"
+        android:onClick="resourceAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnAudio2"
+        android:layout_below="@id/txtAudio1"
+        android:layout_toRightOf="@id/btnAudio1"
+        android:text="Pause"
+        android:onClick="pauseAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnAudio3"
+        android:layout_below="@id/txtAudio1"
+        android:layout_toRightOf="@id/btnAudio2"
+        android:text="Stop"
+        android:onClick="stopAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!--Video buttons-->
+    <TextView
+        android:id="@+id/txtVideo1"
+        android:textSize="40dp"
+        android:layout_below="@id/btnAudio1"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Video" />
+    <Button
+        android:id="@+id/btnVideo1"
+        android:layout_below="@id/txtVideo1"
+        android:text="Start"
+        android:onClick=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnVideo2"
+        android:layout_below="@id/txtVideo1"
+        android:layout_toRightOf="@id/btnVideo1"
+        android:text="Pause"
+        android:onClick=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnVideo3"
+        android:layout_below="@id/txtVideo1"
+        android:layout_toRightOf="@id/btnVideo2"
+        android:text="Stop"
+        android:onClick=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</RelativeLayout>
