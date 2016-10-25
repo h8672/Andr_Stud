@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Tunti25102016</string>
+    <string name="text_above">Change theme buttons</string>
+    <string name="text_toolbar_title">Toolbar Title</string>
+    <string name="btn_text">My button</string>
+</resources>

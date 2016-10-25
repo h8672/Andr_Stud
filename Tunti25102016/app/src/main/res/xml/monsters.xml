@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Monsters>
+    <Monster id="0">
+        <Name>Monster A</Name>
+        <Age>10000</Age>
+        <Talks>
+            <Talk category="laugh" id="0">Huhaa!</Talk>
+            <Talk category="laugh" id="1">Hah!</Talk>
+            <Talk category="laugh" id="2">Muhaha...!</Talk>
+            <Talk category="threaten">You're so dead!</Talk>
+            <Talk category="blame">My fingernail broke because of you!</Talk>
+            <Talk category="scared">Mommy!...</Talk>
+        </Talks>
+        <Description>Monster, not very clever.</Description>
+    </Monster>
+    <Monster id="1">
+        <Name>Monster B</Name>
+        <Age>5000</Age>
+        <Talks>
+            <Talk category="laugh" id="0">Huhaa!</Talk>
+            <Talk category="laugh" id="1">Hah!</Talk>
+            <Talk category="laugh" id="2">Muhaha...!</Talk>
+            <Talk category="threaten">You're so dead!</Talk>
+            <Talk category="blame">My fingernail broke because of you!</Talk>
+            <Talk category="scared">Mommy!...</Talk>
+        </Talks>
+        <Description>Monster, not very clever.</Description>
+    </Monster>
+</Monsters>
