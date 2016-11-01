@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements
                     connectionResult.startResolutionForResult(this, REQUEST_SIGN_IN);
                 } catch (IntentSender.SendIntentException e) {
                     //TODO Unable to resolve, message user appropriately
+                    Toast.makeText(this, "Exception!", Toast.LENGTH_SHORT).show();
                 }
             }
             else {
@@ -102,7 +103,9 @@ public class MainActivity extends AppCompatActivity implements
                     //Ensimmäinen kirjautumiskerta ei vie loppuun connectia... en tiiä miksi...
                     GAC.connect();
                 } else {
-                    Toast.makeText(this, "Verify your OAuth is created or Google Drive API is enabled!", Toast.LENGTH_SHORT).show();
+                    if(GAC.isConnecting()) GAC.connect();
+                    else
+                        Toast.makeText(this, "Verify your OAuth is created or Google Drive API is enabled!", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
