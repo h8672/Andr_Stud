@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GDexample</string>
+    <string name="google_drive_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCxgXl_WsjVTjPe_GIvJiX9EjPYQ4IaM44</string>
+</resources>
