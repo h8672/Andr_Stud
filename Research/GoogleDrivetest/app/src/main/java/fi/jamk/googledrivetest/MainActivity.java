@@ -137,16 +137,22 @@ public class MainActivity extends AppCompatActivity implements
         loadFile(et.getText().toString());
     }
     private void loadFile(String filename) {
-    // Create a query for a specific filename in Drive.
-    Query query = new Query.Builder()
-            .addFilter(Filters.eq(SearchableField.TITLE, filename))
-            .build();
+        Drive.DriveApi.requestSync(GAC);
+        // Create a query for a specific filename in Drive.
+        Query query = new Query.Builder()
+                //.addFilter(Filters.eq(SearchableField.TITLE, filename))
+                .addFilter(Filters.contains(SearchableField.TITLE, filename))
+                .build();
 
         //Creating folder to root folder in Google Drive
         DriveFolder folder;
-        folder = Drive.DriveApi.getRootFolder(GAC);
         MetadataChangeSet set = new MetadataChangeSet.Builder()
-                .setTitle("New folder").build();
+                //https://www.sitepoint.com/web-foundations/mime-types-complete-list/
+                .setTitle("New Folder").build();
+        MetadataChangeSet setfile = new MetadataChangeSet.Builder()
+                //https://www.sitepoint.com/web-foundations/mime-types-complete-list/
+                .setMimeType("text/plain")
+                .setTitle("New File").build();
         //Callback class
         ResultCallback<DriveFolder.DriveFolderResult> folderCreatedCallback = new
                 ResultCallback<DriveFolder.DriveFolderResult>() {
@@ -159,32 +165,58 @@ public class MainActivity extends AppCompatActivity implements
                         yell("Created a folder: " + result.getDriveFolder().getDriveId());
                     }
                 };
-        //Create folder with callback
-        folder.createFolder(GAC, set).setResultCallback(folderCreatedCallback);
+        ResultCallback<DriveFolder.DriveFileResult> fileCreatedCallback = new
+                ResultCallback<DriveFolder.DriveFileResult>() {
+                    @Override
+                    public void onResult(DriveFolder.DriveFileResult result) {
+                        if (!result.getStatus().isSuccess()) {
+                            yell("Error while trying to create the folder");
+                            return;
+                        }
+                        yell("Created a file: " + result.getDriveFile().getDriveId());
+                    }
+                };
         //DriveContents contents;
-        ResultCallback<DriveApi.MetadataBufferResult> listContents = new ResultCallback<DriveApi.MetadataBufferResult>() {
+        final ResultCallback<DriveApi.MetadataBufferResult> listContents = new ResultCallback<DriveApi.MetadataBufferResult>() {
             @Override
             public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
                 if(!result.getStatus().isSuccess()){
                     yell("Error while trying to get contents");
                     return;
                 }
-                MetadataBuffer data = result.getMetadataBuffer();
-                Log.wtf("Count", ""+data.getCount());
+                //Log.wtf("Count", ""+data.getCount());
                 ArrayList list = new ArrayList();
+                MetadataBuffer data = result.getMetadataBuffer();
                 for (Metadata m : data){
-                    //Check if it is folder or extension file with different types
-                    if(m.isFolder()) list.add("Folder"); //Picture
-                    else list.add(m.getFileExtension());
-                    list.add(m.getTitle());
-                    list.add(m.getCreatedDate());
-                    list.add(m.getFileSize());
-                    list.add(m.getMimeType());
+                    //list.add(m.getTitle().toString());
+                    //if(m.isDataValid()) {
+                        //m.getDriveId();
+                        //Check if it is folder or extension file with different types
+                        yell(m.getTitle());
+                        list.add(m.getTitle());
+                        list.add(m.getCreatedDate());
+                        if (m.isFolder()) list.add("Folder"); //Picture
+                        else list.add("Not folder");
+                        //list.add(m.getFileSize());
+                        //list.add(m.getMimeType());
+                    //}
                 }
                 ShowFileList(list);
+                list.clear();
+                data.release();
             }
         };
+        folder = Drive.DriveApi.getRootFolder(GAC);
+        //Create folder with callback
+        //folder.createFolder(GAC, set).setResultCallback(folderCreatedCallback);
+        //TODO Create file, Does not work!!!
+        //folder.createFile(GAC, setfile, contents).setResultCallback(fileCreatedCallback);
+        //Drive.DriveApi.newDriveContents(GAC);
+        //Cant find anything with this
+        //Drive.DriveApi.getRootFolder(GAC).queryChildren(GAC, query).setResultCallback(listContents);
+        //Finds created folders!
         folder.listChildren(GAC).setResultCallback(listContents);
+
         //yell();
         /*folder.queryChildren(GAC, query).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
             @Override
@@ -218,6 +250,10 @@ public class MainActivity extends AppCompatActivity implements
     private void ShowFileList(ArrayList array){
         TextView textView = (TextView) findViewById(R.id.txtFilename);
         String str = "";
-        textView.setText(array.toString());
+        for(int i = 0; i < array.size(); i++){
+            str += array.get(i).toString() + "\n";
+        }
+        textView.setText(str);
+        array.clear();
     }
 }
