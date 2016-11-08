@@ -16,6 +16,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
@@ -24,6 +25,7 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.query.Filter;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
@@ -33,7 +35,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
+//IMPORTANT!
+//Google Drive API:lla saa vain tällä ohjelmalla tehtyjä tietoja
+//Google Drive REST API:lla saa haettua kaikki tiedot
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -43,13 +49,15 @@ public class MainActivity extends AppCompatActivity implements
     private static final int REQUEST_SIGN_IN = 4;
 
     private GoogleApiClient GAC;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         GAC = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
-                .addScope(Drive.SCOPE_FILE)
+                .addScope(Drive.SCOPE_APPFOLDER)
+                //.addScope(Drive.SCOPE_FILE)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -134,15 +142,39 @@ public class MainActivity extends AppCompatActivity implements
 
         Toast.makeText(this, "Button press! I'm connected? " + GAC.isConnected(), Toast.LENGTH_SHORT).show();
         EditText et = (EditText) findViewById(R.id.etxtFilename);
-        loadFile(et.getText().toString());
+        //loadFile(et.getText().toString());
+        findFile(et.getText().toString());
     }
+
+    private void findFile(String filename){
+        Query query = new Query.Builder()
+                .addFilter(Filters.or(Filters.eq(SearchableField.TITLE, filename), (Filters.contains(SearchableField.TITLE, filename))))
+                //.addFilter(Filters.contains(SearchableField.TITLE, filename))
+                .build();
+
+        Drive.DriveApi.query(GAC, query)
+                .setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                    @Override
+                    public void onResult(DriveApi.MetadataBufferResult result) {
+                        if(!result.getStatus().isSuccess()) return;
+                        // Success! Handle the query result.
+                        //TODO handling query results! But how is it handled?
+                        MetadataBuffer buffer = result.getMetadataBuffer();
+                        String str = "\n";
+                        for(Metadata m : buffer){
+                            //if(m.isFolder())
+                            str += m.getTitle() + "\n";
+                            //yell("Metadata title" + m.getTitle().toString());
+                        }
+                        yell("Löytyi "+ buffer.getCount() + " kpl, "+str);
+                    }
+                });
+        yell("Nothing");
+    }
+
     private void loadFile(String filename) {
         Drive.DriveApi.requestSync(GAC);
         // Create a query for a specific filename in Drive.
-        Query query = new Query.Builder()
-                //.addFilter(Filters.eq(SearchableField.TITLE, filename))
-                .addFilter(Filters.contains(SearchableField.TITLE, filename))
-                .build();
 
         //Creating folder to root folder in Google Drive
         DriveFolder folder;
@@ -227,18 +259,7 @@ public class MainActivity extends AppCompatActivity implements
         });*/
         //Drive.DriveApi.fetchDriveId(GAC, "");
     // Invoke the query asynchronously with a callback method
-    Drive.DriveApi.query(GAC, query)
-            .setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
-                @Override
-                public void onResult(DriveApi.MetadataBufferResult result) {
-                    if(result.getStatus().isSuccess()) return;
-                    // Success! Handle the query result.
-                    //TODO handling query results! But how is it handled?
 
-
-                    yell("Hohoi! Täällä on jotain! "+" kpl, "+result.toString());
-                }
-            });
 
     }
 
