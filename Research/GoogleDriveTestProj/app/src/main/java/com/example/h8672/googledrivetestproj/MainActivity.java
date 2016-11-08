@@ -1,7 +1,6 @@
 package com.example.h8672.googledrivetestproj;
 
 import android.app.Activity;
-import android.app.Instrumentation;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
@@ -49,6 +48,13 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("sms_body", "Your message here");
         // verify that the intent will resolve to an activity
         if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
+    }
+
+    private void makeCall(){
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        if(intent.resolveActivity(getPackageManager()) != null){
             startActivity(intent);
         }
     }
