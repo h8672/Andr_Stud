@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -69,10 +70,18 @@ public class MainActivity extends Activity implements
         btn.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                test++;
-                ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
-                pb.setProgress(test % 100);
-                return false;
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    Toast.makeText(getApplicationContext(),"Press", Toast.LENGTH_SHORT).show();
+                }
+                else if(event.getAction() == MotionEvent.ACTION_UP){
+                    Toast.makeText(getApplicationContext(),"Release", Toast.LENGTH_SHORT).show();
+                }
+                else if(event.getAction() == MotionEvent.ACTION_MOVE){
+                    test++;
+                    ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                    pb.setProgress(test % 100);
+                }
+                return true;
             }
         });
     }

@@ -46,6 +46,7 @@ public class Gdrive extends Activity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //setContentView(R.layout.activity_main);
         GAC = new GoogleApiClient
                 .Builder(this)
                 .addApi(Drive.API)
