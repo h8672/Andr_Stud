@@ -76,15 +76,30 @@
         android:layout_toRightOf="@id/btnFolder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-    <TableLayout
-        android:id="@+id/Table"
+    <Button
+        android:id="@+id/btnTest"
+        android:text="Test onTouchListener"
+        android:layout_below="@id/etxtFilename2"
+        android:layout_toRightOf="@id/btnFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:max="100"
+        android:layout_below="@id/btnFolder"
+        android:layout_width="match_parent"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_height="5dp" />
+    <ScrollView
         android:layout_below="@id/btnFolder"
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TableRow>
-            <TextView android:text="asd"/>
-            <TextView android:text="asd"/>
-        </TableRow>
-    </TableLayout>
+        android:layout_height="match_parent">
+        <TableLayout
+            android:id="@+id/Table"
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </TableLayout>
+    </ScrollView>
 </RelativeLayout>

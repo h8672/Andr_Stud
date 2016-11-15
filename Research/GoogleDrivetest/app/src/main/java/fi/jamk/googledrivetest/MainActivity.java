@@ -8,8 +8,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -47,6 +50,7 @@ public class MainActivity extends Activity implements
 
     private GoogleApiClient GAC;
 
+    private int test = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,11 +58,23 @@ public class MainActivity extends Activity implements
         GAC = new GoogleApiClient
                 .Builder(this)
                 .addApi(Drive.API)
-                .addScope(Drive.SCOPE_APPFOLDER)
-                //.addScope(Drive.SCOPE_FILE)
+                //Näyttää App_Data kansion...
+                //.addScope(Drive.SCOPE_APPFOLDER)
+                //Näyttää ohjelman tekemät tiedostot
+                .addScope(Drive.SCOPE_FILE)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+        Button btn = (Button) findViewById(R.id.btnTest);
+        btn.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                test++;
+                ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar);
+                pb.setProgress(test % 100);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -130,7 +146,7 @@ public class MainActivity extends Activity implements
             case MY_RESULT_FILES:
                 if(resultCode == Activity.RESULT_OK){
                     String result = data.getDataString();
-                    Toast.makeText(this, result, Toast.LENGTH_SHORT);
+                    Toast.makeText(this, data.getDataString(), Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
@@ -156,16 +172,16 @@ public class MainActivity extends Activity implements
                     @Override
                     public void onResult(DriveFolder.DriveFolderResult result) {
                         if (!result.getStatus().isSuccess()) {
-                            Toast.makeText(getApplicationContext(), "Error while trying to create the folder", Toast.LENGTH_SHORT);
+                            Toast.makeText(getApplicationContext(), "Error while trying to create the folder", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        Toast.makeText(getApplicationContext(), "Created a folder", Toast.LENGTH_SHORT);
+                        Toast.makeText(getApplicationContext(), "Created a folder", Toast.LENGTH_SHORT).show();
                     }
                 };
         try {
             folder.createFolder(GAC, set).setResultCallback(folderCreatedCallback);
         } catch (Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT);
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -196,7 +212,7 @@ public class MainActivity extends Activity implements
                         //note("Created a file: " + result.getDriveFile().getDriveId());
                         Toast.makeText(getApplicationContext(),
                                 "Created a file",
-                                Toast.LENGTH_SHORT);
+                                Toast.LENGTH_SHORT).show();
                     }
                 };
         //TODO Jotenkin contents pitäisi alustaa...
@@ -228,9 +244,9 @@ public class MainActivity extends Activity implements
                         String str = "Löytyi "+buffer.getCount()+" kpl\n";
                         for(Metadata m : buffer){
                             if(m.isFolder()) str += "Folder, ";
-                            str += m.getTitle() + "\n";
+                            str += m.getTitle().toString() + "\n";
                         }
-                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT);
+                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT).show();
                         buffer.release();
                         result.release();
                     }
@@ -257,7 +273,7 @@ public class MainActivity extends Activity implements
                     //if(m.isDataValid()) {
                     //m.getDriveId();
                     //Check if it is folder or extension file with different types
-                    note(m.getTitle());
+                    //note(m.getTitle());
                     list.add(m.getTitle());
                     list.add(m.getCreatedDate());
                     if (m.isFolder()) list.add("Folder"); //Picture
@@ -266,13 +282,13 @@ public class MainActivity extends Activity implements
                     //list.add(m.getMimeType());
                     //}
                 }
-                Toast.makeText(getApplicationContext(), list.toArray().toString(), Toast.LENGTH_SHORT);
-                ShowFileList(new ArrayList(list));
+                //Toast.makeText(getApplicationContext(), list.toArray().toString(), Toast.LENGTH_SHORT).show();
+                showFileList(list);
                 //list.clear();
-                //data.release();
+                data.release();
             }
         };
-        //folder.listChildren(GAC).setResultCallback(listContents);
+        folder.listChildren(GAC).setResultCallback(listContents);
         return true;
     }
 
@@ -317,13 +333,14 @@ public class MainActivity extends Activity implements
         //Use intent
         findFileIntent();
     }
+    //getPress6 not used on Test button, instead it has listener made in onCreate method
 
     public void note(String notification){
-        Toast.makeText(getApplicationContext(), "GDrive: " + notification, Toast.LENGTH_SHORT);
+        Toast.makeText(getApplicationContext(), "GDrive: " + notification, Toast.LENGTH_SHORT).show();
     }
 
-    public void ShowFileList(ArrayList array){
-        Toast.makeText(getApplicationContext(), array.toString(), Toast.LENGTH_SHORT);
+    public void showFileList(ArrayList array){
+        //Toast.makeText(getApplicationContext(), array.toString(), Toast.LENGTH_SHORT).show();
         TableLayout tl = (TableLayout) findViewById(R.id.Table);
         TextView tv;
         TableRow tr;
@@ -333,8 +350,13 @@ public class MainActivity extends Activity implements
             tv.setText(array.get(i).toString());
             tr.addView(tv);
             tl.addView(tr);
-
+            tl.buildLayer();
         }
+        String str = "";
+        for(int i = 0; i < array.size(); i++){
+            str += array.get(i).toString() + "\n";
+        }
+        //Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT).show();
     }
 
     //Private methods
