@@ -21,14 +21,70 @@
         android:layout_below="@id/txtFilename"
         android:id="@+id/etxtFilename"
         android:freezesText="true"
-        android:text="Beta.Suomi.fi.mup"
-        android:layout_width="wrap_content"
+        android:text="Search"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <Button
         android:id="@+id/btnSearchFile"
         android:text="Search"
-        android:onClick="getPress"
+        android:onClick="getPress1"
         android:layout_below="@id/etxtFilename"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnListLocal"
+        android:text="Find local"
+        android:onClick="getPress5"
+        android:layout_below="@id/etxtFilename"
+        android:layout_toRightOf="@id/btnSearchFile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnListRoot"
+        android:text="List Files"
+        android:onClick="getPress2"
+        android:layout_below="@id/etxtFilename"
+        android:layout_toRightOf="@id/btnListLocal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/txtFilename2"
+        android:text="Create file"
+        android:layout_below="@id/btnSearchFile"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <EditText
+        android:id="@+id/etxtFilename2"
+        android:text="New file name"
+        android:layout_below="@id/txtFilename2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnFolder"
+        android:text="Folder"
+        android:onClick="getPress3"
+        android:layout_below="@id/etxtFilename2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/btnFile"
+        android:text="File"
+        android:onClick="getPress4"
+        android:layout_below="@id/etxtFilename2"
+        android:layout_toRightOf="@id/btnFolder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <TableLayout
+        android:id="@+id/Table"
+        android:layout_below="@id/btnFolder"
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TableRow>
+            <TextView android:text="asd"/>
+            <TextView android:text="asd"/>
+        </TableRow>
+    </TableLayout>
 </RelativeLayout>

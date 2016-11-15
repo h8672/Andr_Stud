@@ -1,14 +1,17 @@
 package fi.jamk.googledrivetest;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,45 +19,40 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
-import com.google.android.gms.drive.DriveContents;
-import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filter;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
 
 //IMPORTANT!
 //Google Drive API:lla saa vain tällä ohjelmalla tehtyjä tietoja
 //Google Drive REST API:lla saa haettua kaikki tiedot
 
-public class MainActivity extends AppCompatActivity implements
+public class MainActivity extends Activity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener
-{
+        GoogleApiClient.OnConnectionFailedListener {
+
     private static final int REQUEST_CODE_RESOLUTION = 404;
     private static final int REQUEST_SIGN_IN = 4;
+
+    //Receive result codes
+    final private static int MY_RESULT_FILES = 6543;
 
     private GoogleApiClient GAC;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        GAC = new GoogleApiClient.Builder(this)
+        GAC = new GoogleApiClient
+                .Builder(this)
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_APPFOLDER)
                 //.addScope(Drive.SCOPE_FILE)
@@ -75,17 +73,18 @@ public class MainActivity extends AppCompatActivity implements
         GAC.disconnect();
     }
 
-    //Yhdistetään onStart jälkeen
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         // onConnected
         Toast.makeText(this, "Connection successful!", Toast.LENGTH_LONG).show();
     }
+
     @Override
     public void onConnectionSuspended(int i) {
         //TODO onConnectionSuspended
         Toast.makeText(this, "onConnectionSuspended("+i+")", Toast.LENGTH_LONG).show();
     }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (connectionResult.hasResolution()) {
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements
                     connectionResult.startResolutionForResult(this, REQUEST_SIGN_IN);
                 } catch (IntentSender.SendIntentException e) {
                     //TODO Unable to resolve, message user appropriately
-                    Toast.makeText(this, "Exception!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Sign in exception!", Toast.LENGTH_SHORT).show();
                 }
             }
             else {
@@ -128,24 +127,222 @@ public class MainActivity extends AppCompatActivity implements
                         Toast.makeText(this, "Verify your OAuth is created or Google Drive API is enabled!", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case MY_RESULT_FILES:
+                if(resultCode == Activity.RESULT_OK){
+                    String result = data.getDataString();
+                    Toast.makeText(this, result, Toast.LENGTH_SHORT);
+                }
+                break;
             default:
                 Toast.makeText(this, "Default switch in onActivityResult!", Toast.LENGTH_LONG).show();
                 break;
         }
     }
 
-    public void getPress(View view){
-        //Button press search
-        //if(GAC.isConnected()) GAC.reconnect();
-        //else if(GAC.isConnecting()) GAC.connect();
-        //else Toast.makeText(this, "Connection failure?", Toast.LENGTH_SHORT).show();
+    //Public methods
+    public boolean createFolder(String foldername){
+        syncGDrive();
+        DriveFolder folder;
+        folder = Drive.DriveApi.getRootFolder(GAC);
 
-        Toast.makeText(this, "Button press! I'm connected? " + GAC.isConnected(), Toast.LENGTH_SHORT).show();
-        EditText et = (EditText) findViewById(R.id.etxtFilename);
-        //loadFile(et.getText().toString());
-        findFile(et.getText().toString());
+        //Set metadata to folder
+        MetadataChangeSet set = new MetadataChangeSet.Builder()
+                //https://www.sitepoint.com/web-foundations/mime-types-complete-list/
+                .setTitle(foldername).build();
+
+        //Callback class
+        ResultCallback<DriveFolder.DriveFolderResult> folderCreatedCallback = new
+                ResultCallback<DriveFolder.DriveFolderResult>() {
+                    @Override
+                    public void onResult(DriveFolder.DriveFolderResult result) {
+                        if (!result.getStatus().isSuccess()) {
+                            Toast.makeText(getApplicationContext(), "Error while trying to create the folder", Toast.LENGTH_SHORT);
+                            return;
+                        }
+                        Toast.makeText(getApplicationContext(), "Created a folder", Toast.LENGTH_SHORT);
+                    }
+                };
+        try {
+            folder.createFolder(GAC, set).setResultCallback(folderCreatedCallback);
+        } catch (Exception e){
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT);
+            return false;
+        }
+
+        return true;
     }
 
+    public boolean createFile(String filename){
+        syncGDrive();
+        Drive.DriveApi.requestSync(GAC);
+        DriveFolder folder;
+        folder = Drive.DriveApi.getRootFolder(GAC);
+
+        //Set metadata for file
+        MetadataChangeSet set = new MetadataChangeSet.Builder()
+                //https://www.sitepoint.com/web-foundations/mime-types-complete-list/
+                .setMimeType("text/plain")
+                .setTitle(filename).build();
+
+        //Callback class
+        ResultCallback<DriveFolder.DriveFileResult> fileCreatedCallback = new
+                ResultCallback<DriveFolder.DriveFileResult>() {
+                    @Override
+                    public void onResult(DriveFolder.DriveFileResult result) {
+                        if (!result.getStatus().isSuccess()) {
+                            note("Error while trying to create the folder");
+                            return;
+                        }
+                        //note("Created a file: " + result.getDriveFile().getDriveId());
+                        Toast.makeText(getApplicationContext(),
+                                "Created a file",
+                                Toast.LENGTH_SHORT);
+                    }
+                };
+        //TODO Jotenkin contents pitäisi alustaa...
+        //DriveContents contents;
+        //folder.createFile(GAC, set, contents).setResultCallback(fileCreatedCallback);
+        return true;
+    }
+
+    public void findFile(String filename){
+        syncGDrive();
+        Query query = new Query.Builder()
+                .addFilter(Filters.or(Filters.eq(SearchableField.TITLE, filename), (Filters.contains(SearchableField.TITLE, filename))))
+                //.addFilter(Filters.contains(SearchableField.TITLE, filename))
+                .build();
+
+        Drive.DriveApi.query(GAC, query)
+                .setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                    @Override
+                    public void onResult(DriveApi.MetadataBufferResult result) {
+                        //If query fails
+                        if(!result.getStatus().isSuccess()){
+                            note("Query failed.\n" + result.getStatus().getStatusMessage());
+                            result.release();
+                            return;
+                        }
+                        // Success! Handle the query result.
+                        //TODO handling query results! But how is it handled?
+                        MetadataBuffer buffer = result.getMetadataBuffer();
+                        String str = "Löytyi "+buffer.getCount()+" kpl\n";
+                        for(Metadata m : buffer){
+                            if(m.isFolder()) str += "Folder, ";
+                            str += m.getTitle() + "\n";
+                        }
+                        Toast.makeText(getApplicationContext(), str, Toast.LENGTH_SHORT);
+                        buffer.release();
+                        result.release();
+                    }
+                });
+    }
+
+    public boolean listFiles(){
+        syncGDrive();
+        DriveFolder folder;
+        folder = Drive.DriveApi.getRootFolder(GAC);
+
+        final ResultCallback<DriveApi.MetadataBufferResult> listContents = new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(@NonNull DriveApi.MetadataBufferResult result) {
+                if(!result.getStatus().isSuccess()){
+                    note("Error while trying to get contents");
+                    return;
+                }
+                //Log.wtf("Count", ""+data.getCount());
+                ArrayList list = new ArrayList();
+                MetadataBuffer data = result.getMetadataBuffer();
+                for (Metadata m : data){
+                    //list.add(m.getTitle().toString());
+                    //if(m.isDataValid()) {
+                    //m.getDriveId();
+                    //Check if it is folder or extension file with different types
+                    note(m.getTitle());
+                    list.add(m.getTitle());
+                    list.add(m.getCreatedDate());
+                    if (m.isFolder()) list.add("Folder"); //Picture
+                    else list.add("Not folder");
+                    //list.add(m.getFileSize());
+                    //list.add(m.getMimeType());
+                    //}
+                }
+                Toast.makeText(getApplicationContext(), list.toArray().toString(), Toast.LENGTH_SHORT);
+                ShowFileList(new ArrayList(list));
+                //list.clear();
+                //data.release();
+            }
+        };
+        //folder.listChildren(GAC).setResultCallback(listContents);
+        return true;
+    }
+
+    //Gets file from sources
+    private void findFileIntent(){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        //Accept any type of mime file
+        intent.setType("*/*");
+        // verify that the intent will resolve to an activity
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, MY_RESULT_FILES);
+        }
+
+    }
+
+    //Button methods
+    public void getPress1(View view) {
+        //Search file
+        EditText et;
+        //Button press search
+        et = (EditText) findViewById(R.id.etxtFilename);
+        findFile(et.getText().toString());
+    }
+    public void getPress2(View view) {
+        //List files
+        listFiles();
+    }
+    public void getPress3(View view) {
+        //Create folder
+        EditText et;
+        et = (EditText) findViewById(R.id.etxtFilename2);
+        createFolder(et.getText().toString());
+    }
+    public void getPress4(View view) {
+        //Create file
+        EditText et;
+        et = (EditText) findViewById(R.id.etxtFilename2);
+        createFile(et.getText().toString());
+    }
+    public void getPress5(View view) {
+        //Use intent
+        findFileIntent();
+    }
+
+    public void note(String notification){
+        Toast.makeText(getApplicationContext(), "GDrive: " + notification, Toast.LENGTH_SHORT);
+    }
+
+    public void ShowFileList(ArrayList array){
+        Toast.makeText(getApplicationContext(), array.toString(), Toast.LENGTH_SHORT);
+        TableLayout tl = (TableLayout) findViewById(R.id.Table);
+        TextView tv;
+        TableRow tr;
+        for(int i = 0; i < array.size(); i++){
+            tr = new TableRow(this);
+            tv = new TextView(this);
+            tv.setText(array.get(i).toString());
+            tr.addView(tv);
+            tl.addView(tr);
+
+        }
+    }
+
+    //Private methods
+    private void syncGDrive(){
+        Drive.DriveApi.requestSync(GAC);
+    }
+
+/*
     private void findFile(String filename){
         Query query = new Query.Builder()
                 .addFilter(Filters.or(Filters.eq(SearchableField.TITLE, filename), (Filters.contains(SearchableField.TITLE, filename))))
@@ -166,10 +363,10 @@ public class MainActivity extends AppCompatActivity implements
                             str += m.getTitle() + "\n";
                             //yell("Metadata title" + m.getTitle().toString());
                         }
-                        yell("Löytyi "+ buffer.getCount() + " kpl, "+str);
+                        //yell("Löytyi "+ buffer.getCount() + " kpl, "+str);
                     }
                 });
-        yell("Nothing");
+        //yell("Nothing");
     }
 
     private void loadFile(String filename) {
@@ -256,25 +453,11 @@ public class MainActivity extends AppCompatActivity implements
                 int items = result.getMetadataBuffer().getCount();
                 yell("Containts: " + items + " items and string: " + result.toString());
             }
-        });*/
+        });*//*
         //Drive.DriveApi.fetchDriveId(GAC, "");
     // Invoke the query asynchronously with a callback method
 
 
     }
-
-    //Just want to yell!
-    private void yell(String str){
-        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
-    }
-
-    private void ShowFileList(ArrayList array){
-        TextView textView = (TextView) findViewById(R.id.txtFilename);
-        String str = "";
-        for(int i = 0; i < array.size(); i++){
-            str += array.get(i).toString() + "\n";
-        }
-        textView.setText(str);
-        array.clear();
-    }
+*/
 }
